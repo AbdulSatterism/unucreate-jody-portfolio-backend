@@ -1,26 +1,26 @@
 import nodemailer from 'nodemailer';
-import ApiError from '../errors/ApiError';
-import { StatusCodes } from 'http-status-codes';
-import config from '../config';
+import config from '../../../config';
+export const contactMail = async (
+  email: string,
+  message: string,
+  name: string,
+) => {
+  const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // Use `true` for port 465, `false` for all other ports
+    auth: {
+      user: config.email.user,
+      pass: config.email.pass,
+    },
+  });
 
-export async function sendEmail(email: string, subject: string, text: string) {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: config.email.host,
-      port: Number(config.email.port),
-      secure: false,
-      auth: {
-        user: config.email.user,
-        pass: config.email.pass,
-      },
-    });
-
-    const info = await transporter.sendMail({
-      from: `"Jodi" ${config.email.from}`, // Sender address
-      to: email, // Recipient's email
-      subject: `${subject}`, // Subject line
-      text: text, // Plain text version
-      html: `
+  await transporter.sendMail({
+    from: `"Jodi" ${config.email.from}`, // Sender address
+    to: email, // list of receivers
+    subject: ` ${name} From My Portfolio`, // Subject line
+    text: 'message', // plain text body
+    html: `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -102,11 +102,8 @@ export async function sendEmail(email: string, subject: string, text: string) {
         </head>
         <body>
           <div class="container">
-            <div class="header">
-              <h1>${subject}</h1>
-            </div>
             <div class="content">
-              <p>${text}</p>
+              <p>${message}</p>
             </div>
             <div class="footer">
               <p>&copy; ${new Date().getFullYear()} JODI. All rights reserved.</p>
@@ -115,13 +112,5 @@ export async function sendEmail(email: string, subject: string, text: string) {
         </body>
         </html>
       `,
-    });
-
-    return info;
-  } catch (error) {
-    throw new ApiError(
-      StatusCodes.INTERNAL_SERVER_ERROR,
-      'Error sending email',
-    );
-  }
-}
+  });
+};
